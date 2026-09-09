@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian Studio — Digital Card</title>
+<style>
+  /* ============ EDIT YOUR COMPANY DETAILS IN THE <script> BELOW (search for "COMPANY DATA") ============ */
+
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap');
+
+  :root{
+    --ink:#10161A;
+    --ink-soft:#1B242A;
+    --paper:#F3EFE6;
+    --brass:#C6A15B;
+    --brass-dim:#8C7440;
+    --sage:#7C8B7A;
+    --line: rgba(243,239,230,0.14);
+    --radius: 2px;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    background: var(--ink);
+    color: var(--paper);
+    font-family:'Inter', sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 16px;
+    line-height:1.5;
+  }
+
+  .stage{
+    width:100%;
+    max-width:640px;
+    display:flex;
+    flex-direction:column;
+    gap:28px;
+  }
+
+  /* ---------- Card ---------- */
+  .card-wrap{ perspective:1600px; }
+
+  .card{
+    position:relative;
+    width:100%;
+    min-height: clamp(210px, 40vw, 260px);
+    border-radius: var(--radius);
+    background:
+      radial-gradient(120% 140% at 85% -10%, rgba(198,161,91,0.16), transparent 55%),
+      linear-gradient(155deg, var(--ink-soft), var(--ink) 65%);
+    border:1px solid var(--line);
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6);
+    padding: clamp(16px, 4vw, 40px);
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    gap: 14px;
+    overflow:hidden;
+    transition: transform 0.5s cubic-bezier(.2,.8,.2,1);
+  }
+
+  .card::before{
+    content:"";
+    position:absolute;
+    inset:10px;
+    border:1px solid var(--line);
+    pointer-events:none;
+  }
+
+  .card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-shrink: 0; /* never let the logo/language row get squeezed by content below it */
+  }
+
+  .mark{
+    width:34px; height:34px;
+    border:1px solid var(--brass);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces', serif;
+    font-size:15px;
+    color:var(--brass);
+    flex-shrink:0;
+  }
+
+  .card-top-right{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    justify-content:flex-end;
+    gap:10px;
+    min-width: 0; /* allow role-tag inside to truncate instead of forcing the row to wrap/grow */
+  }
+
+  .lang-toggle{
+    flex-shrink: 0; /* language switch stays fully visible and tappable at all times */
+  }
+
+  .role-tag{
+    font-size:11px;
+    letter-spacing:0.02em;
+    color: var(--sage);
+    text-align:right;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .lang-toggle{
+    display:flex;
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:2px;
+    gap:2px;
+  }
+  .lang-btn{
+    border:none;
+    background:transparent;
+    color: var(--sage);
+    font-family:'Inter',sans-serif;
+    font-size:10.5px;
+    letter-spacing:0.02em;
+    padding:4px 9px;
+    border-radius:999px;
+    cursor:pointer;
+    transition: background .2s ease, color .2s ease;
+  }
+  .lang-btn:hover{ color: var(--paper); }
+  .lang-btn.active{
+    background: var(--brass);
+    color: var(--ink);
+  }
+  .lang-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+
+  .card-mid{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+
+  .company-name{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size: clamp(28px, 5.4vw, 42px);
+    letter-spacing: -0.01em;
+    margin:0;
+    color: var(--paper);
+  }
+
+  .tagline{
+    font-size:13.5px;
+    color: var(--sage);
+    max-width: 340px;
+    font-style: italic;
+    font-family:'Fraunces', serif;
+  }
+
+  .card-bottom{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:16px;
+    border-top:1px solid var(--line);
+    padding-top:14px;
+  }
+
+  .contact-line{
+    font-size:12px;
+    color: var(--paper);
+    opacity:0.75;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+
+  .contact-line span b{
+    color:var(--brass);
+    font-weight:500;
+  }
+
+  /* Speaker button sits on the card itself */
+  .speak-btn{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background: transparent;
+    border:1px solid var(--brass-dim);
+    color: var(--paper);
+    border-radius: 999px;
+    padding:9px 16px 9px 12px;
+    font-family:'Inter',sans-serif;
+    font-size:12.5px;
+    letter-spacing:0.01em;
+    cursor:pointer;
+    transition: border-color 0.25s ease, background 0.25s ease;
+    flex-shrink:0;
+  }
+  .speak-btn:hover{ border-color: var(--brass); background: rgba(198,161,91,0.08); }
+  .speak-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .speak-btn.playing{ border-color: var(--brass); background: rgba(198,161,91,0.1); }
+
+  .wave{
+    display:flex;
+    align-items:center;
+    gap:2px;
+    height:14px;
+  }
+  .wave i{
+    width:2px;
+    height:4px;
+    background: var(--brass);
+    border-radius:1px;
+    animation: none;
+  }
+  .speak-btn.playing .wave i{ animation: bounce 0.9s ease-in-out infinite; }
+  .wave i:nth-child(1){ animation-delay: 0s; }
+  .wave i:nth-child(2){ animation-delay: 0.12s; }
+  .wave i:nth-child(3){ animation-delay: 0.24s; }
+  .wave i:nth-child(4){ animation-delay: 0.36s; }
+  @keyframes bounce{
+    0%, 100%{ height:4px; }
+    50%{ height:13px; }
+  }
+
+  /* ---------- Console panel ---------- */
+  .console{
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--ink-soft);
+    padding: 22px clamp(16px, 4vw, 28px);
+  }
+
+  .console-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:14px;
+  }
+
+  .console-head h2{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:16px;
+    margin:0;
+    color: var(--paper);
+  }
+
+  .status-dot{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:11px;
+    color: var(--sage);
+  }
+  .status-dot::before{
+    content:"";
+    width:6px; height:6px;
+    border-radius:50%;
+    background: var(--sage);
+  }
+  .status-dot.live::before{ background:#9BBE8F; box-shadow:0 0 0 3px rgba(155,190,143,0.2); }
+
+  .transcript{
+    min-height:70px;
+    max-height:220px;
+    overflow-y:auto;
+    font-size:14px;
+    color: rgba(243,239,230,0.9);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    padding-right:4px;
+  }
+
+  .transcript .empty{
+    color: var(--sage);
+    font-size:13px;
+  }
+
+  .bubble{
+    max-width:88%;
+    padding:9px 13px;
+    border-radius: var(--radius);
+    font-size:13.5px;
+  }
+  .bubble.user{
+    align-self:flex-end;
+    background: rgba(198,161,91,0.12);
+    border:1px solid rgba(198,161,91,0.3);
+  }
+  .bubble.agent{
+    align-self:flex-start;
+    background: rgba(243,239,230,0.05);
+    border:1px solid var(--line);
+  }
+
+  .console-controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:16px;
+  }
+
+  .chip{
+    background: transparent;
+    border:1px solid var(--line);
+    color: var(--paper);
+    opacity:0.85;
+    font-size:12px;
+    padding:7px 12px;
+    border-radius:999px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    transition: border-color .2s ease, opacity .2s ease;
+  }
+  .chip:hover{ border-color: var(--brass-dim); opacity:1; }
+  .chip:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+
+  .ask-row{
+    display:flex;
+    gap:8px;
+    margin-top:14px;
+  }
+
+  .ask-row input{
+    flex:1;
+    background: var(--ink);
+    border:1px solid var(--line);
+    color: var(--paper);
+    padding:10px 12px;
+    border-radius: var(--radius);
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+  }
+  .ask-row input:focus{ outline:none; border-color: var(--brass-dim); }
+  .ask-row input::placeholder{ color: rgba(243,239,230,0.35); }
+
+  .mic-btn, .send-btn{
+    border:1px solid var(--line);
+    background: transparent;
+    color: var(--paper);
+    width:40px;
+    border-radius: var(--radius);
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+    transition: border-color .2s ease, background .2s ease, color .2s ease;
+  }
+  .mic-btn:hover, .send-btn:hover{ border-color: var(--brass-dim); }
+  .mic-btn.listening{ background: var(--brass); border-color: var(--brass); color: var(--ink); }
+  .mic-btn:disabled{ opacity:0.35; cursor:not-allowed; }
+
+  .note{
+    margin-top:12px;
+    font-size:11px;
+    color: rgba(124,139,122,0.9);
+  }
+
+  /* ---------- Enquiry block ---------- */
+  .enquiry-block{
+    margin-top:16px;
+    padding-top:16px;
+    border-top:1px solid var(--line);
+  }
+
+  .enquiry-toggle{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    background:transparent;
+    border:none;
+    color: var(--sage);
+    font-family:'Inter',sans-serif;
+    font-size:12.5px;
+    padding:0;
+    cursor:pointer;
+    transition: color .2s ease;
+  }
+  .enquiry-toggle:hover{ color: var(--paper); }
+  .enquiry-toggle:focus-visible{ outline:2px solid var(--brass); outline-offset:3px; }
+
+  .enquiry-form{
+    margin-top:12px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .enquiry-form input,
+  .enquiry-form textarea{
+    width:100%;
+    background: var(--ink);
+    border:1px solid var(--line);
+    color: var(--paper);
+    padding:10px 12px;
+    border-radius: var(--radius);
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+    resize: vertical;
+  }
+  .enquiry-form input:focus,
+  .enquiry-form textarea:focus{ outline:none; border-color: var(--brass-dim); }
+  .enquiry-form input::placeholder,
+  .enquiry-form textarea::placeholder{ color: rgba(243,239,230,0.35); }
+
+  .enquiry-form-actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .submit-enquiry-btn{
+    background: var(--brass);
+    border:1px solid var(--brass);
+    color: var(--ink);
+    font-family:'Inter',sans-serif;
+    font-weight:500;
+    font-size:12.5px;
+    padding:9px 16px;
+    border-radius: var(--radius);
+    cursor:pointer;
+    transition: opacity .2s ease;
+  }
+  .submit-enquiry-btn:hover{ opacity:0.9; }
+  .submit-enquiry-btn:disabled{ opacity:0.5; cursor:not-allowed; }
+  .submit-enquiry-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+
+  .enquiry-status{
+    font-size:12px;
+    color: var(--sage);
+  }
+  .enquiry-status.success{ color:#9BBE8F; }
+  .enquiry-status.error{ color:#C97B63; }
+
+  @media (max-width: 380px){
+    .role-tag{
+      max-width: 78px;
+    }
+    .lang-btn{
+      padding: 4px 7px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .wave i, .card{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <div class="card-wrap">
+    <div class="card" id="card">
+      <div class="card-top">
+        <div class="mark">M</div>
+        <div class="card-top-right">
+          <div class="lang-toggle" id="langToggle" role="group" aria-label="Choose language">
+            <button type="button" class="lang-btn active" data-lang="en">EN</button>
+            <button type="button" class="lang-btn" data-lang="ta">தமிழ்</button>
+          </div>
+          <div class="role-tag" id="roleTag">Strategy &amp; Brand Design</div>
+        </div>
+      </div>
+
+      <div class="card-mid">
+        <p class="company-name" id="companyName">Meridian Studio</p>
+        <p class="tagline" id="tagline">Clarity, built by hand.</p>
+      </div>
+
+      <div class="card-bottom">
+        <div class="contact-line" id="contactLine">
+          <span><b>meridianstudio.co</b></span>
+          <span>hello@meridianstudio.co · +1 (415) 555‑0142</span>
+        </div>
+        <button class="speak-btn" id="speakBtn" aria-pressed="false">
+          <span class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span id="speakLabel">Hear our story</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="console">
+    <div class="console-head">
+      <h2>Ask the studio</h2>
+      <div class="status-dot" id="statusDot">idle</div>
+    </div>
+
+    <div class="transcript" id="transcript">
+      <p class="empty">Tap a topic below, or ask your own question about the company.</p>
+    </div>
+
+    <div class="console-controls" id="chips"></div>
+
+    <div class="ask-row">
+      <input type="text" id="askInput" placeholder="Ask about services, pricing, location…" autocomplete="off">
+      <button class="mic-btn" id="micBtn" title="Ask by voice" aria-label="Ask by voice">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </button>
+      <button class="send-btn" id="sendBtn" title="Ask" aria-label="Send question">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+
+    <p class="note" id="voiceNote">Voice reply uses your browser's built-in speech. Microphone input needs Chrome, Edge, or Safari.</p>
+
+    <div class="enquiry-block">
+      <button type="button" class="enquiry-toggle" id="enquiryToggleBtn" aria-expanded="false">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        <span id="enquiryToggleLabel">Send an enquiry</span>
+      </button>
+
+      <div class="enquiry-form" id="enquiryForm" hidden>
+        <input type="text" id="enquiryName" placeholder="Your name (optional)" autocomplete="name">
+        <input type="text" id="enquiryContact" placeholder="Email or phone (optional)" autocomplete="email">
+        <textarea id="enquiryText" rows="3" placeholder="Type your question or enquiry…"></textarea>
+        <div class="enquiry-form-actions">
+          <button type="button" class="submit-enquiry-btn" id="submitEnquiryBtn">Submit enquiry</button>
+          <span class="enquiry-status" id="enquiryStatus" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =========================================================================
+   CONFIG — connect the enquiry form to Supabase.
+
+   SETUP (5 minutes, one time):
+   1. Create a free project at https://supabase.com if you don't have one.
+   2. In your project, open the SQL Editor and run:
+
+        create table enquiries (
+          id uuid primary key default gen_random_uuid(),
+          created_at timestamptz default now(),
+          name text,
+          contact text,
+          language text,
+          company text,
+          enquiry text not null
+        );
+
+        alter table enquiries enable row level security;
+
+        -- Allows this public web page to INSERT rows using the anon key,
+        -- but not read, update, or delete anything — so it's safe to embed
+        -- the anon key in client-side code like this file.
+        create policy "Public can submit enquiries"
+          on enquiries for insert
+          to anon
+          with check (true);
+
+   3. Go to Project Settings → API. Copy the "Project URL" and the
+      "anon public" key (NOT the service_role key — that one is secret
+      and must never be used in browser code).
+   4. Paste both into CONFIG below.
+
+   To confirm it's working: submit a test enquiry on the card, then check
+   Table Editor → enquiries in your Supabase dashboard for the new row.
+
+   IMPORTANT: the anon key is meant to be public-safe, but only because the
+   insert-only policy above restricts what it can do. Don't loosen that
+   policy (e.g. adding SELECT/UPDATE/DELETE for anon) or anyone could read
+   or wipe every enquiry others have submitted.
+   ========================================================================= */
+const CONFIG = {
+  supabaseUrl: "PASTE_YOUR_SUPABASE_PROJECT_URL_HERE",       // e.g. https://abcdefgh.supabase.co
+  supabaseAnonKey: "PASTE_YOUR_SUPABASE_ANON_PUBLIC_KEY_HERE",
+  supabaseTable: "enquiries"
+};
+
+/* =========================================================================
+   COMPANY DATA — replace everything in this object with your real details.
+   Provide both an "en" and a "ta" version of every text field. The card UI
+   and the voice agent's answers are both generated from here, in whichever
+   language is currently selected on the card.
+   ========================================================================= */
+const COMPANY = {
+  // Language-neutral facts (shown as-is under the card regardless of language)
+  name: "Meridian Studio",
+  website: "meridianstudio.co",
+  email: "hello@meridianstudio.co",
+  phone: "+1 (415) 555-0142",
+
+  en: {
+    role: "Strategy & Brand Design",
+    tagline: "Clarity, built by hand.",
+    speakLabel: "Hear our story",
+    consoleTitle: "Ask the studio",
+    emptyTranscript: "Tap a topic below, or ask your own question about the company.",
+    inputPlaceholder: "Ask about services, pricing, location…",
+    voiceNote: "The agent uses a female system voice when your device has one, for both English and Tamil. Microphone input needs Chrome, Edge, or Safari.",
+    voiceNoteUnsupported: "Voice reply uses your browser's built-in speech. Microphone input isn't supported in this browser — type your question instead.",
+    status: { idle: "idle", speaking: "speaking", listening: "listening", thinking: "thinking" },
+    speechLang: "en-US",
+
+    intro: "Hi, I'm the Meridian Studio assistant. We're a strategy and brand design partner for founders who are ready to stop looking like a startup and start looking like the category leader. We work in small teams, we ship fast, and every engagement ends with a system the client can run on their own. Ask me anything about our services, our process, or how to get in touch.",
+
+    topics: [
+      {
+        label: "Services",
+        keywords: ["service", "offer", "do you", "work"],
+        answer: "We offer three core services: brand strategy and positioning, visual identity systems, and website design and build. Most clients start with a two week strategy sprint before moving into design."
+      },
+      {
+        label: "Process",
+        keywords: ["process", "how do you work", "timeline", "how long"],
+        answer: "Our typical engagement runs six to ten weeks. We start with discovery and strategy, move into concept design with two rounds of revision, then finish with a full delivery kit and a live handoff session."
+      },
+      {
+        label: "Pricing",
+        keywords: ["price", "cost", "budget", "how much"],
+        answer: "Projects generally start around twelve thousand dollars for a focused identity engagement, scaling up for full brand and website work. We'll always give you a fixed quote before anything begins."
+      },
+      {
+        label: "Location",
+        keywords: ["location", "where", "based", "office"],
+        answer: "We're based in San Francisco, and about half of our clients work with us fully remotely from other cities."
+      },
+      {
+        label: "Contact",
+        keywords: ["contact", "email", "phone", "reach", "call"],
+        answer: "You can reach us at hello@meridianstudio.co, or by phone at 415 555 0142. We usually reply within one business day."
+      }
+    ],
+
+    fallback: "I don't have a specific answer for that yet, but you're welcome to reach us directly at hello@meridianstudio.co and a real person on the team will follow up.",
+
+    enquiry: {
+      toggleLabel: "Send an enquiry",
+      namePlaceholder: "Your name (optional)",
+      contactPlaceholder: "Email or phone (optional)",
+      textPlaceholder: "Type your question or enquiry…",
+      submitLabel: "Submit enquiry",
+      submittingLabel: "Sending…",
+      success: "Thanks — your enquiry has been received. Our team will follow up.",
+      error: "Something went wrong sending that. Please try again or email us directly.",
+      requiredError: "Please write your enquiry before submitting.",
+      notConfigured: "Enquiry submissions aren't connected yet. Please email us directly.",
+      voiceAck: "Thank you. I've received your enquiry, and our team will follow up with you soon."
+    }
+  },
+
+  ta: {
+    role: "மூலோபாயம் & பிராண்ட் வடிவமைப்பு",
+    tagline: "தெளிவு, கைவினையால் உருவாக்கப்பட்டது.",
+    speakLabel: "எங்கள் கதையைக் கேளுங்கள்",
+    consoleTitle: "ஸ்டுடியோவிடம் கேளுங்கள்",
+    emptyTranscript: "கீழே உள்ள தலைப்பைத் தட்டவும், அல்லது நிறுவனத்தைப் பற்றி உங்கள் சொந்தக் கேள்வியைக் கேளுங்கள்.",
+    inputPlaceholder: "சேவைகள், விலை, இடம் பற்றி கேளுங்கள்…",
+    voiceNote: "கிடைக்கும் போது இயந்திரம் பெண் குரலைப் பயன்படுத்தும் — ஆங்கிலம் மற்றும் தமிழ் இரண்டிலும். மைக்ரோஃபோன் உள்ளீட்டிற்கு Chrome, Edge அல்லது Safari தேவை.",
+    voiceNoteUnsupported: "குரல் பதில் உங்கள் உலாவியின் உள்ளமைந்த பேச்சு அம்சத்தைப் பயன்படுத்துகிறது. இந்த உலாவியில் மைக்ரோஃபோன் உள்ளீடு ஆதரிக்கப்படவில்லை — தட்டச்சு செய்யவும்.",
+    status: { idle: "தயார்", speaking: "பேசுகிறது", listening: "கேட்கிறது", thinking: "யோசிக்கிறது" },
+    speechLang: "ta-IN",
+
+    intro: "வணக்கம், நான் மெரிடியன் ஸ்டுடியோவின் உதவியாளர். புதிய நிறுவனமாகத் தெரியும் நிலையிலிருந்து விடுபட்டு, துறையின் முன்னணி பிராண்டாக மாற விரும்பும் நிறுவனர்களுக்கு நாங்கள் மூலோபாயம் மற்றும் பிராண்ட் வடிவமைப்பு பங்காளியாக செயல்படுகிறோம். நாங்கள் சிறிய குழுக்களாக வேலை செய்கிறோம், விரைவாக முடிக்கிறோம், ஒவ்வொரு திட்டமும் வாடிக்கையாளர் தாமே இயக்கக்கூடிய ஒரு அமைப்புடன் முடிவடைகிறது. எங்கள் சேவைகள், செயல்முறை, அல்லது எங்களைத் தொடர்பு கொள்வது பற்றி எதுவும் கேளுங்கள்.",
+
+    topics: [
+      {
+        label: "சேவைகள்",
+        keywords: ["சேவை", "என்ன செய்", "வேலை"],
+        answer: "நாங்கள் மூன்று முக்கிய சேவைகளை வழங்குகிறோம்: பிராண்ட் மூலோபாயம் மற்றும் நிலைநிறுத்தல், காட்சி அடையாள அமைப்புகள், மற்றும் இணையதள வடிவமைப்பு மற்றும் உருவாக்கம். பெரும்பாலான வாடிக்கையாளர்கள் இரண்டு வார மூலோபாய ஸ்பிரிண்ட்டுடன் தொடங்குகிறார்கள்."
+      },
+      {
+        label: "செயல்முறை",
+        keywords: ["செயல்முறை", "எவ்வளவு நேரம்", "எப்படி வேலை"],
+        answer: "எங்கள் வழக்கமான திட்டப்பணி ஆறு முதல் பத்து வாரங்கள் வரை நடக்கும். ஆய்வு மற்றும் மூலோபாயத்துடன் தொடங்கி, இரண்டு சுற்று திருத்தங்களுடன் வடிவமைப்பு கருத்துக்கு நகர்ந்து, இறுதியாக முழுமையான வழங்கல் தொகுப்பு மற்றும் நேரடி ஒப்படைப்பு அமர்வுடன் முடிக்கிறோம்."
+      },
+      {
+        label: "விலை",
+        keywords: ["விலை", "எவ்வளவு", "பட்ஜெட்"],
+        answer: "திட்டங்கள் பொதுவாக மையப்படுத்தப்பட்ட அடையாள திட்டப்பணிக்கு பன்னிரெண்டாயிரம் டாலர்களில் தொடங்குகின்றன, முழு பிராண்ட் மற்றும் இணையதள வேலைக்கு அதிகரிக்கும். தொடங்கும் முன் நாங்கள் எப்போதும் ஒரு நிலையான மேற்கோளைத் தருவோம்."
+      },
+      {
+        label: "இடம்",
+        keywords: ["இடம்", "எங்கே", "அலுவலகம்"],
+        answer: "நாங்கள் சான் பிரான்சிஸ்கோவை தளமாகக் கொண்டுள்ளோம், எங்கள் வாடிக்கையாளர்களில் பாதிக்கும் மேற்பட்டோர் மற்ற நகரங்களிலிருந்து முழுமையாக தொலைநிலையில் எங்களுடன் பணிபுரிகிறார்கள்."
+      },
+      {
+        label: "தொடர்பு",
+        keywords: ["தொடர்பு", "மின்னஞ்சல்", "போன்", "அழைப்பு"],
+        answer: "எங்களை hello@meridianstudio.co என்ற மின்னஞ்சலில் அல்லது 415 555 0142 என்ற எண்ணில் தொடர்பு கொள்ளலாம். பொதுவாக ஒரு வேலை நாளுக்குள் பதிலளிப்போம்."
+      }
+    ],
+
+    fallback: "அதற்கு குறிப்பிட்ட பதில் இப்போது என்னிடம் இல்லை, ஆனால் நீங்கள் நேரடியாக hello@meridianstudio.co என்ற மின்னஞ்சலில் தொடர்பு கொள்ளலாம், குழுவின் ஒருவர் பதிலளிப்பார்.",
+
+    enquiry: {
+      toggleLabel: "விசாரணை அனுப்ப",
+      namePlaceholder: "உங்கள் பெயர் (விருப்பம்)",
+      contactPlaceholder: "மின்னஞ்சல் அல்லது தொலைபேசி (விருப்பம்)",
+      textPlaceholder: "உங்கள் கேள்வி அல்லது விசாரணையை தட்டச்சு செய்யவும்…",
+      submitLabel: "விசாரணையைச் சமர்ப்பிக்கவும்",
+      submittingLabel: "அனுப்புகிறது…",
+      success: "நன்றி — உங்கள் விசாரணை பெறப்பட்டது. எங்கள் குழு விரைவில் தொடர்பு கொள்ளும்.",
+      error: "அனுப்புவதில் சிக்கல் ஏற்பட்டது. மீண்டும் முயற்சிக்கவும் அல்லது நேரடியாக மின்னஞ்சல் அனுப்பவும்.",
+      requiredError: "சமர்ப்பிக்கும் முன் உங்கள் விசாரணையை எழுதவும்.",
+      notConfigured: "விசாரணை சமர்ப்பிப்பு இன்னும் இணைக்கப்படவில்லை. நேரடியாக மின்னஞ்சல் அனுப்பவும்.",
+      voiceAck: "நன்றி. உங்கள் விசாரணையைப் பெற்றேன், எங்கள் குழு விரைவில் உங்களைத் தொடர்பு கொள்ளும்."
+    }
+  }
+};
+
+let currentLang = 'en';
+
+/* ========================= Render card + console from COMPANY[currentLang] ========================= */
+function render(){
+  const t = COMPANY[currentLang];
+  document.getElementById('companyName').textContent = COMPANY.name;
+  document.getElementById('roleTag').textContent = t.role;
+  document.getElementById('roleTag').title = t.role;
+  document.getElementById('tagline').textContent = t.tagline;
+  document.getElementById('contactLine').innerHTML =
+    `<span><b>${COMPANY.website}</b></span><span>${COMPANY.email} · ${COMPANY.phone}</span>`;
+  document.title = COMPANY.name + " — Digital Card";
+
+  speakLabel.textContent = t.speakLabel;
+  document.querySelector('.console-head h2').textContent = t.consoleTitle;
+  askInput.placeholder = t.inputPlaceholder;
+  voiceNote.textContent = SpeechRecognition ? t.voiceNote : t.voiceNoteUnsupported;
+  statusDot.textContent = t.status.idle;
+
+  // reset transcript and chips for the new language
+  transcript.innerHTML = `<p class="empty">${t.emptyTranscript}</p>`;
+  chipsWrap.innerHTML = '';
+  t.topics.forEach(topic => {
+    const chip = document.createElement('button');
+    chip.className = 'chip';
+    chip.type = 'button';
+    chip.textContent = topic.label;
+    chip.addEventListener('click', () => askQuestion(topic.label));
+    chipsWrap.appendChild(chip);
+  });
+
+  if (recognition) recognition.lang = t.speechLang;
+
+  // Enquiry form: localize labels and reset to a clean, closed state
+  enquiryToggleLabel.textContent = t.enquiry.toggleLabel;
+  enquiryName.placeholder = t.enquiry.namePlaceholder;
+  enquiryContact.placeholder = t.enquiry.contactPlaceholder;
+  enquiryText.placeholder = t.enquiry.textPlaceholder;
+  submitEnquiryBtn.textContent = t.enquiry.submitLabel;
+  enquiryStatus.textContent = '';
+  enquiryStatus.className = 'enquiry-status';
+  enquiryForm.hidden = true;
+  enquiryToggleBtn.setAttribute('aria-expanded', 'false');
+}
+
+document.getElementById('langToggle').addEventListener('click', (e) => {
+  const btn = e.target.closest('.lang-btn');
+  if (!btn || btn.classList.contains('active')) return;
+  if (synth) synth.cancel();
+  currentLang = btn.dataset.lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b === btn));
+  render();
+});
+
+/* ========================= Speech synthesis (the "voice") ========================= */
+const synth = window.speechSynthesis;
+let chosenVoice = null;
+
+const FEMALE_VOICE_PATTERN = /female|woman|girl|samantha|zira|jenny|aria|susan|victoria|karen|moira|tessa|fiona|veena|raveena|lekha|vani|shreya|swara|heera|kalpana|priya|neerja|salli|joanna|kendra|kimberly|ivy|amy|emma|nicole|olivia/i;
+
+function pickVoice(lang){
+  const voices = synth.getVoices();
+  if (!voices.length) return null;
+  const prefix = lang.split('-')[0]; // "en" or "ta"
+  const exactLang = voices.filter(v => v.lang && v.lang.toLowerCase() === lang.toLowerCase());
+  const sameLang = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(prefix));
+  return (
+    exactLang.find(v => FEMALE_VOICE_PATTERN.test(v.name)) ||
+    sameLang.find(v => FEMALE_VOICE_PATTERN.test(v.name)) ||
+    exactLang[0] ||
+    sameLang[0] ||
+    voices.find(v => FEMALE_VOICE_PATTERN.test(v.name)) ||
+    null
+  );
+}
+if (synth){
+  synth.onvoiceschanged = () => {}; // voices load async in some browsers; speak() re-picks each time
+}
+
+const speakBtn = document.getElementById('speakBtn');
+const speakLabel = document.getElementById('speakLabel');
+const statusDot = document.getElementById('statusDot');
+
+function speak(text){
+  const t = COMPANY[currentLang];
+  if (!synth){
+    addBubble('agent', text);
+    return;
+  }
+  synth.cancel(); // stop anything currently speaking
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = t.speechLang;
+  const voice = pickVoice(t.speechLang);
+  if (voice) utter.voice = voice;
+  const confirmedFemale = voice && FEMALE_VOICE_PATTERN.test(voice.name);
+  utter.rate = 1;
+  utter.pitch = confirmedFemale ? 1 : 1.15; // soften unlabeled/male-default voices toward a lighter, lady-like tone
+
+  utter.onstart = () => {
+    speakBtn.classList.add('playing');
+    speakBtn.setAttribute('aria-pressed', 'true');
+    statusDot.textContent = COMPANY[currentLang].status.speaking;
+    statusDot.classList.add('live');
+  };
+  utter.onend = () => {
+    speakBtn.classList.remove('playing');
+    speakBtn.setAttribute('aria-pressed', 'false');
+    statusDot.textContent = COMPANY[currentLang].status.idle;
+    statusDot.classList.remove('live');
+  };
+  utter.onerror = utter.onend;
+
+  synth.speak(utter);
+}
+
+speakBtn.addEventListener('click', () => {
+  if (synth && synth.speaking){
+    synth.cancel();
+    return;
+  }
+  const t = COMPANY[currentLang];
+  addBubble('agent', t.intro);
+  speak(t.intro);
+});
+
+/* ========================= Transcript & topic chips ========================= */
+const transcript = document.getElementById('transcript');
+const chipsWrap = document.getElementById('chips');
+
+function addBubble(who, text){
+  const empty = transcript.querySelector('.empty');
+  if (empty) empty.remove();
+  const div = document.createElement('div');
+  div.className = 'bubble ' + who;
+  div.textContent = text;
+  transcript.appendChild(div);
+  transcript.scrollTop = transcript.scrollHeight;
+}
+
+function findAnswer(question){
+  const t = COMPANY[currentLang];
+  const q = question.toLowerCase();
+  const hit = t.topics.find(topic => topic.keywords.some(k => q.includes(k.toLowerCase())));
+  return hit ? hit.answer : t.fallback;
+}
+
+function askQuestion(question){
+  if (!question || !question.trim()) return;
+  addBubble('user', question);
+  const answer = findAnswer(question);
+  // slight delay so it reads like the agent is "thinking" before it replies
+  statusDot.textContent = COMPANY[currentLang].status.thinking;
+  setTimeout(() => {
+    addBubble('agent', answer);
+    speak(answer);
+  }, 350);
+}
+
+/* ========================= Text input ========================= */
+const askInput = document.getElementById('askInput');
+const sendBtn = document.getElementById('sendBtn');
+
+function submitInput(){
+  const val = askInput.value;
+  askInput.value = '';
+  askQuestion(val);
+}
+sendBtn.addEventListener('click', submitInput);
+askInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitInput(); });
+
+/* ========================= Voice input (speech recognition) ========================= */
+const micBtn = document.getElementById('micBtn');
+const voiceNote = document.getElementById('voiceNote');
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let listening = false;
+
+if (SpeechRecognition){
+  recognition = new SpeechRecognition();
+  recognition.lang = COMPANY[currentLang].speechLang;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    listening = true;
+    micBtn.classList.add('listening');
+    statusDot.textContent = COMPANY[currentLang].status.listening;
+    statusDot.classList.add('live');
+  };
+  recognition.onend = () => {
+    listening = false;
+    micBtn.classList.remove('listening');
+    statusDot.classList.remove('live');
+    statusDot.textContent = COMPANY[currentLang].status.idle;
+  };
+  recognition.onerror = () => {
+    listening = false;
+    micBtn.classList.remove('listening');
+    statusDot.textContent = COMPANY[currentLang].status.idle;
+  };
+  recognition.onresult = (event) => {
+    const said = event.results[0][0].transcript;
+    askQuestion(said);
+  };
+
+  micBtn.addEventListener('click', () => {
+    if (listening){ recognition.stop(); return; }
+    synth && synth.cancel();
+    recognition.lang = COMPANY[currentLang].speechLang; // in case language was switched mid-session
+    recognition.start();
+  });
+} else {
+  micBtn.disabled = true;
+}
+
+/* ========================= Customer enquiries → Supabase ========================= */
+const enquiryToggleBtn = document.getElementById('enquiryToggleBtn');
+const enquiryToggleLabel = document.getElementById('enquiryToggleLabel');
+const enquiryForm = document.getElementById('enquiryForm');
+const enquiryName = document.getElementById('enquiryName');
+const enquiryContact = document.getElementById('enquiryContact');
+const enquiryText = document.getElementById('enquiryText');
+const submitEnquiryBtn = document.getElementById('submitEnquiryBtn');
+const enquiryStatus = document.getElementById('enquiryStatus');
+
+enquiryToggleBtn.addEventListener('click', () => {
+  const nowHidden = !enquiryForm.hidden;
+  enquiryForm.hidden = nowHidden;
+  enquiryToggleBtn.setAttribute('aria-expanded', String(!nowHidden));
+  if (!nowHidden) enquiryText.focus();
+});
+
+submitEnquiryBtn.addEventListener('click', submitEnquiry);
+enquiryText.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submitEnquiry();
+});
+
+async function submitEnquiry(){
+  const t = COMPANY[currentLang];
+  const enquiryValue = enquiryText.value.trim();
+
+  if (!enquiryValue){
+    enquiryStatus.textContent = t.enquiry.requiredError;
+    enquiryStatus.className = 'enquiry-status error';
+    enquiryText.focus();
+    return;
+  }
+
+  const configured =
+    CONFIG.supabaseUrl && !CONFIG.supabaseUrl.includes('PASTE_YOUR') &&
+    CONFIG.supabaseAnonKey && !CONFIG.supabaseAnonKey.includes('PASTE_YOUR');
+
+  if (!configured){
+    enquiryStatus.textContent = t.enquiry.notConfigured;
+    enquiryStatus.className = 'enquiry-status error';
+    return;
+  }
+
+  const payload = {
+    name: enquiryName.value.trim(),
+    contact: enquiryContact.value.trim(),
+    enquiry: enquiryValue,
+    language: currentLang,
+    company: COMPANY.name
+  };
+
+  submitEnquiryBtn.disabled = true;
+  enquiryStatus.textContent = t.enquiry.submittingLabel;
+  enquiryStatus.className = 'enquiry-status';
+
+  try {
+    const endpoint = `${CONFIG.supabaseUrl.replace(/\/$/, '')}/rest/v1/${CONFIG.supabaseTable}`;
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'apikey': CONFIG.supabaseAnonKey,
+        'Authorization': `Bearer ${CONFIG.supabaseAnonKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok){
+      // Supabase returns a JSON error body — e.g. missing table, or a row-level-security
+      // policy blocking the insert. Surface the real reason in the console for debugging.
+      let detail = '';
+      try { detail = JSON.stringify(await res.json()); } catch (_) { /* no JSON body */ }
+      console.error(`Supabase insert failed (status ${res.status}):`, detail);
+      enquiryStatus.textContent = t.enquiry.error;
+      enquiryStatus.className = 'enquiry-status error';
+      return;
+    }
+
+    enquiryStatus.textContent = t.enquiry.success;
+    enquiryStatus.className = 'enquiry-status success';
+    addBubble('agent', t.enquiry.voiceAck);
+    speak(t.enquiry.voiceAck);
+
+    enquiryName.value = '';
+    enquiryContact.value = '';
+    enquiryText.value = '';
+  } catch (err){
+    console.error('Enquiry request failed:', err);
+    enquiryStatus.textContent = t.enquiry.error;
+    enquiryStatus.className = 'enquiry-status error';
+  } finally {
+    submitEnquiryBtn.disabled = false;
+  }
+}
+
+/* Render the card in the default language now that every control exists */
+render();
+</script>
+
+</body>
+</html>
